@@ -497,6 +497,40 @@ main {
     background: rgba(0, 255, 204, 0.1);
 }
 
+.project-badge.sih-badge {
+    color: #ff9f43;
+    border-color: rgba(255, 159, 67, 0.4);
+    background: rgba(255, 159, 67, 0.1);
+}
+
+.project-link {
+    color: #fff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.project-link::after {
+    content: ' ↗';
+    font-size: 0.75em;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.project-link:hover {
+    color: var(--accent);
+}
+
+.project-link:hover::after {
+    opacity: 1;
+}
+
+.project-subtitle {
+    font-size: 0.9rem !important;
+    color: var(--text-secondary) !important;
+    font-style: italic;
+    margin-bottom: 16px !important;
+}
+
 .project-card h3 {
     font-size: 1.6rem;
     color: #fff;
