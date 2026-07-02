@@ -131,7 +131,8 @@ a {
 
 .nav-links {
     display: flex;
-    gap: 28px;
+    gap: 24px;
+    align-items: center;
 }
 
 .nav-links a {
@@ -140,10 +141,29 @@ a {
     color: var(--text-secondary);
     transition: color 0.3s;
     letter-spacing: 0.02em;
+    position: relative;
+    padding: 4px 0;
 }
 
-.nav-links a:hover {
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent);
+    transition: width 0.3s;
+}
+
+.nav-links a:hover,
+.nav-links a.nav-active {
     color: var(--accent);
+}
+
+.nav-links a:hover::after,
+.nav-links a.nav-active::after {
+    width: 100%;
 }
 
 .nav-toggle {
@@ -154,6 +174,7 @@ a {
     border: none;
     cursor: pointer;
     padding: 5px;
+    z-index: 101;
 }
 
 .nav-toggle span {
@@ -164,7 +185,8 @@ a {
     transition: 0.3s;
 }
 
-@media (max-width: 768px) {
+/* Tablet — hide nav links at 1024px because the full name is wider */
+@media (max-width: 1024px) {
     .nav-links {
         display: none;
         position: absolute;
@@ -172,14 +194,33 @@ a {
         left: 0;
         right: 0;
         flex-direction: column;
-        padding: 20px 40px;
-        background: rgba(10, 10, 15, 0.95);
-        backdrop-filter: blur(20px);
+        gap: 0;
+        padding: 12px 0;
+        background: rgba(10, 10, 15, 0.97);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
         border-bottom: 1px solid var(--glass-border);
+        box-shadow: 0 16px 32px rgba(0,0,0,0.4);
     }
-    .nav-links.active { display: flex; }
+    .nav-links.active {
+        display: flex;
+        animation: slideDown 0.3s ease-out;
+    }
+    .nav-links a {
+        padding: 14px 32px;
+        font-size: 0.95rem;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        width: 100%;
+    }
+    .nav-links a::after { display: none; }
+    .nav-links a:last-child { border-bottom: none; }
     .nav-toggle { display: flex; }
     .navbar { padding: 16px 20px; }
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ========== HERO ========== */
