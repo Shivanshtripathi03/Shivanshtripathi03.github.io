@@ -45,24 +45,151 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ========== Parallax Background Orbs ==========
-    let ticking = false;
-    window.addEventListener('scroll', () => {
-        if (!ticking) {
-            window.requestAnimationFrame(() => {
-                const scrolled = window.pageYOffset;
-                const orb1 = document.querySelector('.orb-1');
-                const orb2 = document.querySelector('.orb-2');
-                const orb3 = document.querySelector('.orb-3');
+    // ========== Interactive Canvas Background ==========
+    const canvas = document.getElementById('interactive-bg');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        
+        // Mouse interaction state
+        let mouse = { x: null, y: null, radius: 150 };
 
-                if (orb1) orb1.style.transform = `translateY(${scrolled * 0.08}px)`;
-                if (orb2) orb2.style.transform = `translateY(${scrolled * -0.12}px)`;
-                if (orb3) orb3.style.transform = `translate(-50%, calc(-50% + ${scrolled * 0.04}px))`;
-                ticking = false;
-            });
-            ticking = true;
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+        
+        // Touch support for mobile
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                mouse.x = e.touches[0].clientX;
+                mouse.y = e.touches[0].clientY;
+            }
+        });
+
+        window.addEventListener('mouseout', () => {
+            mouse.x = undefined;
+            mouse.y = undefined;
+        });
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initParticles();
         }
-    });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2 + 1;
+                this.baseX = this.x;
+                this.baseY = this.y;
+                this.density = (Math.random() * 20) + 5;
+                // Slower, subtle movement
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+            }
+
+            draw() {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            update() {
+                // Autonomous subtle movement
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Wrap around edges
+                if (this.x < 0 || this.x > width) this.vx = -this.vx;
+                if (this.y < 0 || this.y > height) this.vy = -this.vy;
+
+                // Mouse interaction
+                if (mouse.x != null && mouse.y != null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    let forceDirectionX = dx / distance;
+                    let forceDirectionY = dy / distance;
+                    let maxDistance = mouse.radius;
+                    let force = (maxDistance - distance) / maxDistance;
+                    let directionX = forceDirectionX * force * this.density;
+                    let directionY = forceDirectionY * force * this.density;
+
+                    // Push away slightly
+                    if (distance < mouse.radius) {
+                        this.x -= directionX * 0.3;
+                        this.y -= directionY * 0.3;
+                    } else {
+                        // Slowly return to natural path
+                        if (this.x !== this.baseX) {
+                            let dx = this.x - this.baseX;
+                            this.x -= dx / 50;
+                        }
+                        if (this.y !== this.baseY) {
+                            let dy = this.y - this.baseY;
+                            this.y -= dy / 50;
+                        }
+                    }
+                }
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            // Amount of particles based on screen size to maintain performance
+            let numberOfParticles = (width * height) / 12000;
+            // Cap at 150 particles to keep it minimalist and performant
+            if (numberOfParticles > 150) numberOfParticles = 150; 
+            
+            for (let i = 0; i < numberOfParticles; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function connectParticles() {
+            let opacityValue = 1;
+            for (let a = 0; a < particles.length; a++) {
+                for (let b = a; b < particles.length; b++) {
+                    let dx = particles[a].x - particles[b].x;
+                    let dy = particles[a].y - particles[b].y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 120) {
+                        opacityValue = 1 - (distance / 120);
+                        // Using accent color (#00ffcc) heavily muted
+                        ctx.strokeStyle = `rgba(0, 255, 204, ${opacityValue * 0.15})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[a].x, particles[a].y);
+                        ctx.lineTo(particles[b].x, particles[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, width, height);
+            
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+            connectParticles();
+        }
+
+        // Initialize
+        window.addEventListener('resize', resize);
+        resize();
+        animate();
+    }
 
     // ========== Active Nav Highlight ==========
     const sections = document.querySelectorAll('section[id]');
