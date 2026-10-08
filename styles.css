@@ -930,3 +930,10 @@ footer {
     .cert-item { flex-direction: column; }
     .tools-showcase, .tech-stack-grid { grid-template-columns: 1fr; }
 }
+
+/* NetGuard-XAI project badge */
+.project-badge.netguard-badge {
+    color: #a78bfa;
+    border-color: rgba(167, 139, 250, 0.4);
+    background: rgba(167, 139, 250, 0.1);
+}
